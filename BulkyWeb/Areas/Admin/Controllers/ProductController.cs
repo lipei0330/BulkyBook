@@ -1,6 +1,8 @@
 ﻿using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models;
+using Bulky.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel;
 
 namespace BulkyWeb.Areas.Admin.Controllers
@@ -21,20 +23,41 @@ namespace BulkyWeb.Areas.Admin.Controllers
 
         public IActionResult Create()
         {
-            return View();
+            //IEnumerable<SelectListItem> categoryList = _unitOfWork.CategoryRepo.GetAll().Select(
+            //    c => new SelectListItem
+            //    {
+            //        Text = c.Name,
+            //        Value = c.Id.ToString()
+            //    }
+            //    );
+            //ViewBag passed data from controller to view
+            //ViewBag.CategoryList = categoryList;
+
+            ProductViewModel prodVM = new ProductViewModel()
+            {
+                CategoryList = _unitOfWork.CategoryRepo.GetAll().Select(
+                    c=> new SelectListItem
+                    {
+                        Text = c.Name,
+                        Value = c.Id.ToString()
+                    }),
+
+                Product = new Product()
+            };
+            return View(prodVM);
         }
 
         [HttpPost]
-        public IActionResult Create(Product product)
+        public IActionResult Create(ProductViewModel prodVM)
         {
             if(ModelState.IsValid)
             {
-                _unitOfWork.ProductRepo.Add(product);
+                _unitOfWork.ProductRepo.Add(prodVM.Product);
                 _unitOfWork.Save();
                 TempData["success"] = "Product created successfully!";
                 return RedirectToAction("Index");
             }
-            return View(product);
+            return View(prodVM);
         }
 
         public IActionResult Edit(int id) 
